@@ -1,0 +1,122 @@
+﻿@{
+    ViewData["Title"] = "Upload the files";
+}
+<link href="https://code.jquery.com/ui/1.10.4/themes/ui-lightness/jquery-ui.css"    
+    rel="stylesheet">  
+<link href="../../Content/bootstrap.css" rel="stylesheet" type="text/css" />  
+<link href="../../Content/bootstrap-theme.css" rel="stylesheet" type="text/css" />    
+<style>    
+    .ui-widget-header {    
+        background: #cedc98;    
+        border: 1px solid #DDDDDD;    
+        color: #333333;    
+        font-weight: bold;    
+    }    
+    .progress-label {    
+        position: absolute;    
+        left: 50%;    
+        top: 13px;    
+        font-weight: bold;    
+        text-shadow: 1px 1px 0 #fff;    
+    }    
+    .red {    
+        color: red;    
+    }    
+</style>    
+<div class="container">    
+    <h1> File Upload </h1>    
+    <div id="FileBrowse">    
+        <div class="row">    
+            <div class="col-sm-4">    
+                <input type="file" name="files" id="Files"  multiple />    
+            </div>    
+            <div class="col-sm-2">    
+                <input type="button" id="UploadBtn" class="btn btn-danger" value="Upload" />    
+            </div>    
+        </div>    
+    </div>    
+
+    <div class="row">    
+        <div class="col-sm-4">    
+            <div id="progressbar-5">    
+                <div class="progress-label">    
+                </div>    
+            </div>    
+        </div>    
+    </div>      
+    <div class="row">    
+        <div class="col-sm-6">    
+            <table class="table" id="ListofFiles">    
+                <tr>    
+                    <th>    
+                        Files    
+                    </th>     
+                    <th>
+                        Success
+                    </th>
+                </tr>    
+            </table>    
+        </div>    
+    </div>       
+</div>   
+@section scripts{  
+<script src="https://code.jquery.com/jquery-1.10.2.js"></script>      
+<script src="https://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>    
+<script>    
+            
+    $('#UploadBtn').click(async function () {    
+        const files = $("#Files").get(0).files;    
+        const fileData = new FormData(); 
+        [...files].forEach((f) => fileData.append("files", f))  
+        $.ajax({    
+            url: "/Upload/UploadFiles",   
+            type: "POST",    
+            contentType: false,      
+            processData: false,
+            data: fileData,     
+            success: (result) => {
+                console.log(result);
+                if (result != "") {    
+                    $('#FileBrowse').find("*").prop("disabled", true);    
+                    loadProgressBar([...result]);  
+                }    
+            },    
+            error:  (err) => {    
+                alert(err.statusText);    
+            }    
+        });    
+    
+    });    
+
+     const loadProgressBar = (result) => {    
+        const progressbar = $("#progressbar-5");    
+        const progressLabel = $(".progress-label");    
+        progressbar.show();    
+        $("#progressbar-5").progressbar({     
+            change: () => {    
+                progressLabel.text(    
+                    progressbar.progressbar("value") + "%");     
+            },    
+            complete: () => {     
+                progressbar.progressbar("value", 0); 
+                progressLabel.text("");   
+                progressbar.hide();
+                const markup = `${result.map(({fileName, isLoaded}) => `<tr><td>${fileName}</td><td>${isLoaded ? 'Успех' : 'Файл не загружен'}</td></tr>`)}` 
+                $("#ListofFiles tbody").append(markup);    
+                $('#Files').val('');    
+                $('#FileBrowse').find("*").prop("disabled", false);    
+            }    
+        });    
+        const progress = () => {    
+            const val = progressbar.progressbar("value") || 0;    
+            progressbar.progressbar("value", val + 1);    
+            if (val < 99) {    
+                setTimeout(progress, 25);    
+            }    
+        }    
+        setTimeout(progress, 100);    
+    }    
+</script>    
+}
+
+

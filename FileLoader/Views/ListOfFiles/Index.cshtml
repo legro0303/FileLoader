@@ -1,0 +1,30 @@
+﻿@using FileLoader.Models
+@using System.Linq
+@{
+    ViewData["Title"] = "Table of loaded files";
+}
+<h1>@ViewData["Title"]</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Id</th>
+            <th>Name of file</th>
+            <th>Download the file</th>
+            <th>Temporary link</th>
+            <th>Generate new link</th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach(FileModel value in Model)
+        {
+            <tr>
+                <td>@value.Id</td>
+                <td>@value.OriginalName</td>
+                <td><a href=@value.FullLink>Download</a></td>
+                <td><div>@value.FullLink</div></td>
+                <td>@Html.ActionLink("Generate","ChangeLink","Download",new {link = @value.GeneratedPartOfLink})</td>
+            </tr>
+        }
+    </tbody>
+</table>
